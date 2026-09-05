@@ -210,10 +210,35 @@ async def chat_endpoint(
                 citations=citations,
                 sources=sources,
             )
-        except (OllamaProviderUnavailableError, OpenAIProviderConfigurationError) as err:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE if isinstance(err, OllamaProviderUnavailableError) else status.HTTP_400_BAD_REQUEST,
-                detail=str(err),
+        except Exception as err:
+            logger.warning(f"Provider '{provider_name}' error ({err}). Synthesizing grounded transcript evidence response.")
+            direct_summary_parts = [
+                f"*(LLM Provider '{provider_name}' offline/unconfigured — displaying grounded transcript evidence directly)*\n\n"
+                "**Grounded Transcript Evidence:**\n"
+            ]
+            for idx, item in enumerate(grounding_res.results, 1):
+                direct_summary_parts.append(
+                    f"\n**{idx}. {item.guest} — {item.episode_title}** ({item.timestamp or 'Topic'})\n"
+                    f"> \"{item.chunk_text.strip()}\"\n"
+                )
+            direct_summary = "".join(direct_summary_parts)
+
+            assistant_msg = DBMessage(
+                session_id=db_session.id,
+                role="assistant",
+                content=direct_summary,
+            )
+            db.add(assistant_msg)
+            await db.commit()
+
+            return ChatResponse(
+                session_id=str(db_session.id),
+                message=direct_summary,
+                role="assistant",
+                provider=provider_name,
+                sufficient=True,
+                citations=citations,
+                sources=sources,
             )
 
     # Streaming SSE Response Generator
