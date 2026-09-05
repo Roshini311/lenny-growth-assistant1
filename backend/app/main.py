@@ -22,6 +22,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Pre-warming query embedder model on server startup...")
+    try:
+        from app.services.retrieval.embedder import embed_query
+        embed_query("test query")
+        logger.info("Query embedder model pre-warmed successfully.")
+    except Exception as e:
+        logger.warning(f"Query embedder pre-warming warning: {e}")
+
+
 # CORS Configuration for local development
 app.add_middleware(
     CORSMiddleware,
