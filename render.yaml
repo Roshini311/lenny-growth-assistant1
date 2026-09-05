@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: lenny-growth-assistant
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt && cd frontend && npm install && npm run build"
+    startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lenny-growth-db
+          property: connectionString
+      - key: DEFAULT_LLM_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+
+databases:
+  - name: lenny-growth-db
+    databaseName: lennys_growth_db
+    user: lenny_user
+    plan: free
