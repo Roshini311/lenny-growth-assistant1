@@ -31,7 +31,7 @@ export default function App() {
 
   // Artifact & Provenance Drawer State
   const [activeArtifact, setActiveArtifact] = useState<ArtifactResponse | null>(null);
-  const [isArtifactPanelOpen, setIsArtifactPanelOpen] = useState(true);
+  const [isArtifactPanelOpen, setIsArtifactPanelOpen] = useState(false);
   const [activeSources, setActiveSources] = useState<CitationSource[]>([]);
   const [isSourcesDrawerOpen, setIsSourcesDrawerOpen] = useState(false);
 
@@ -285,7 +285,7 @@ export default function App() {
         </div>
 
         {/* Right Column: Side-Panel Artifact Viewer */}
-        {isArtifactPanelOpen && (
+        {isArtifactPanelOpen && activeArtifact && (
           <div className="w-full lg:w-[48%] xl:w-[50%] h-full shrink-0 z-20 shadow-2xl transition-all">
             <ArtifactViewer
               artifact={activeArtifact}
