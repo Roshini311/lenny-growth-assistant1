@@ -68,7 +68,7 @@ class RetrievalService:
         start_time = time.perf_counter()
         logger.info(f"Executing retrieval query: '{query[:60]}...' (top_k={k}, threshold={threshold})")
 
-        # 1. Clean meta-prompt prefixes and map quick prompt phrases for optimal vector matching
+        # 1. Clean meta-prompt prefixes, question fillers, and map key phrases for optimal vector matching
         cleaned_query = query.strip()
         lower_q = cleaned_query.lower()
 
@@ -78,18 +78,27 @@ class RetrievalService:
             cleaned_query = "product-led growth"
         elif "brian chesky" in lower_q or "airbnb" in lower_q:
             cleaned_query = "product leadership at Airbnb"
+        elif "learn" in lower_q and ("ai" in lower_q or "machine learning" in lower_q):
+            cleaned_query = "AI and product management"
+        elif "ai" in lower_q and ("skills" in lower_q or "improve" in lower_q or "product" in lower_q):
+            cleaned_query = "AI and product management"
         else:
             prefixes = [
                 "write a ship 30 for 30 essay on ",
                 "write a ship 30 essay on ",
                 "generate a ship 30 essay on ",
                 "write an essay on ",
+                "what are the main challenges in ",
+                "what are the challenges in ",
+                "what are the main ",
+                "what are the ",
+                "what is the ",
                 "tell me about ",
                 "can you explain ",
             ]
             for p in prefixes:
                 if lower_q.startswith(p):
-                    cleaned_query = cleaned_query[len(p):].strip()
+                    cleaned_query = lower_q[len(p):].strip()
                     break
 
         # Generate 384-dim query vector
