@@ -62,6 +62,33 @@ export const api = {
     });
 
     if (!response.ok) {
+      try {
+        const fallbackRes = await fetch(`${API_BASE}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: req.message,
+            session_id: req.session_id || undefined,
+            provider: req.provider || undefined,
+            stream: false,
+          }),
+        });
+        if (fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json();
+          callbacks.onDelta(fallbackData.message, fallbackData.session_id, fallbackData.provider);
+          callbacks.onDone({
+            sessionId: fallbackData.session_id,
+            provider: fallbackData.provider,
+            sufficient: fallbackData.sufficient,
+            citations: fallbackData.citations || [],
+            sources: fallbackData.sources || [],
+          });
+          return;
+        }
+      } catch (fallbackErr) {
+        console.warn('Fallback non-streaming chat request failed:', fallbackErr);
+      }
+
       let errText = `HTTP Error ${response.status}`;
       try {
         const errJson = await response.json();
