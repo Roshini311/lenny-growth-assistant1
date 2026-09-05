@@ -416,5 +416,5 @@ Development was conducted using an iterative AI-assisted engineering loop (*Plan
 
 
 ##live deployment links
-**Primary Live App Link: https://2a5d3aa458b9ba24-49-207-180-47.serveousercontent.com
+**Primary Live App Link: https://lenny-growth-assistant1.vercel.app/
 **Backup Live App Link: https://bright-squids-guess.loca.lt
