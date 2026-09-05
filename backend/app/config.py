@@ -11,6 +11,15 @@ class Settings(BaseSettings):
     # Database Configuration (Defaults to local postgres/postgres@localhost:5432/lennys_growth_db)
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lennys_growth_db"
 
+    @property
+    def ASYNC_DATABASE_URL(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            return url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
+
     # LLM Provider Controls
     DEFAULT_LLM_PROVIDER: str = "ollama"
     AUTO_FALLBACK_TO_CLOUD: bool = False
@@ -38,4 +47,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
 

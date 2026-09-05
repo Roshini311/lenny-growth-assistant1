@@ -5,7 +5,7 @@ from app.config import settings
 
 # Create async engine with connection pooling for asyncpg
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.ASYNC_DATABASE_URL,
     echo=settings.APP_ENV == "development",
     pool_size=10,
     max_overflow=20,
