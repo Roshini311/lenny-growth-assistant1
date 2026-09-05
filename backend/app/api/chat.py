@@ -262,14 +262,45 @@ async def chat_endpoint(
             yield f"data: {json.dumps(done_payload)}\n\n"
 
         except Exception as stream_err:
-            logger.error(f"Error during stream generation for provider '{provider_name}': {stream_err}")
-            err_payload = {
-                "event": "error",
-                "error": str(stream_err),
-                "provider": provider_name,
-                "code": "PROVIDER_ERROR",
-            }
-            yield f"data: {json.dumps(err_payload)}\n\n"
+            logger.warning(f"Provider '{provider_name}' stream error ({stream_err}). Synthesizing grounded transcript evidence response.")
+            if grounding_res and grounding_res.results:
+                direct_summary_parts = [
+                    f"*(LLM Provider '{provider_name}' offline/unconfigured — displaying grounded transcript evidence directly)*\n\n"
+                    "**Grounded Transcript Evidence:**\n"
+                ]
+                for idx, item in enumerate(grounding_res.results, 1):
+                    direct_summary_parts.append(
+                        f"\n**{idx}. {item.guest} — {item.episode_title}** ({item.timestamp or 'Topic'})\n"
+                        f"> \"{item.chunk_text.strip()}\"\n"
+                    )
+                direct_summary = "".join(direct_summary_parts)
+
+                payload = {
+                    "event": "delta",
+                    "delta": direct_summary,
+                    "session_id": str(db_session.id),
+                    "provider": provider_name,
+                }
+                yield f"data: {json.dumps(payload)}\n\n"
+
+                done_payload = {
+                    "event": "done",
+                    "finish_reason": "stop",
+                    "session_id": str(db_session.id),
+                    "provider": provider_name,
+                    "sufficient": True,
+                    "citations": citations,
+                    "sources": sources,
+                }
+                yield f"data: {json.dumps(done_payload)}\n\n"
+            else:
+                err_payload = {
+                    "event": "error",
+                    "error": str(stream_err),
+                    "provider": provider_name,
+                    "code": "PROVIDER_ERROR",
+                }
+                yield f"data: {json.dumps(err_payload)}\n\n"
 
     return StreamingResponse(
         sse_event_generator(),
