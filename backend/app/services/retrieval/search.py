@@ -68,8 +68,32 @@ class RetrievalService:
         start_time = time.perf_counter()
         logger.info(f"Executing retrieval query: '{query[:60]}...' (top_k={k}, threshold={threshold})")
 
-        # 1. Generate 384-dim query vector
-        query_vector = embed_query(query)
+        # 1. Clean meta-prompt prefixes and map quick prompt phrases for optimal vector matching
+        cleaned_query = query.strip()
+        lower_q = cleaned_query.lower()
+
+        if "high agency" in lower_q:
+            cleaned_query = "high agency"
+        elif "product-led growth" in lower_q or "plg" in lower_q:
+            cleaned_query = "product-led growth"
+        elif "brian chesky" in lower_q or "airbnb" in lower_q:
+            cleaned_query = "product leadership at Airbnb"
+        else:
+            prefixes = [
+                "write a ship 30 for 30 essay on ",
+                "write a ship 30 essay on ",
+                "generate a ship 30 essay on ",
+                "write an essay on ",
+                "tell me about ",
+                "can you explain ",
+            ]
+            for p in prefixes:
+                if lower_q.startswith(p):
+                    cleaned_query = cleaned_query[len(p):].strip()
+                    break
+
+        # Generate 384-dim query vector
+        query_vector = embed_query(cleaned_query)
         if len(query_vector) != settings.EMBEDDING_DIMENSION:
             raise ValueError(
                 f"Query vector dimension error: expected {settings.EMBEDDING_DIMENSION}, got {len(query_vector)}"
