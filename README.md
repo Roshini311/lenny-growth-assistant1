@@ -413,3 +413,8 @@ Development was conducted using an iterative AI-assisted engineering loop (*Plan
 | **Docker Compose** | `docker-compose.yml` & Nginx reverse proxy | Fully Documented |
 | **Automated Tests** | 61 / 61 PASSED (44 Backend + 17 Frontend) | Fully Documented |
 | **Official Transcript Source** | `ChatPRD/lennys-podcast-transcripts` (8,637 chunks) | Fully Documented |
+
+
+##live deployment links
+**Primary Live App Link: https://2a5d3aa458b9ba24-49-207-180-47.serveousercontent.com
+**Backup Live App Link: https://bright-squids-guess.loca.lt
